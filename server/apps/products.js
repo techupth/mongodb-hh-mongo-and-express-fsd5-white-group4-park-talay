@@ -6,8 +6,20 @@ const productRouter = Router();
 
 productRouter.get("/", async (req, res) => {
     const collection = db.collection("products");
+    const category = req.query.category;
+    const keywords = req.query.keywords;
 
-    const products = await collection.find({ category: "it" }).limit(10).toArray();
+    const query = {};
+
+    if (category) {
+        query.category = category;
+    }
+
+    if (keywords) {
+        query.name = new RegExp(keywords, "i");
+    }
+
+    const products = await collection.find(query).limit(10).sort({ created_at: -1 }).toArray();
 
     return res.json({ data: products });
 });
@@ -26,7 +38,7 @@ productRouter.get("/:id", async (req, res) => {
 productRouter.post("/", async (req, res) => {
     const collection = db.collection("products");
 
-    const productData = { ...req.body };
+    const productData = { ...req.body, created_at: new Date() };
     await collection.insertOne(productData);
 
     return res.json({
