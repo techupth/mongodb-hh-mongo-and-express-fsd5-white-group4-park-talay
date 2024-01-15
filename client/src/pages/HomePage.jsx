@@ -10,6 +10,7 @@ function HomePage() {
     const [isLoading, setIsLoading] = useState(null);
     const [category, setCategory] = useState("");
     const [searchProduct, setSearchProduct] = useState("");
+    const [totalPage, setTotalPage] = useState(1);
     const [page, setPage] = useState(1);
 
     const getProducts = async () => {
@@ -17,9 +18,10 @@ function HomePage() {
             setIsError(false);
             setIsLoading(true);
             const results = await axios(
-                `http://localhost:4001/products?category=${category}&keywords=${searchProduct}`
+                `http://localhost:4001/products?page=${page}&category=${category}&keywords=${searchProduct}`
             );
             setProducts(results.data.data);
+            setTotalPage(results.data.pages || 1);
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
@@ -34,9 +36,21 @@ function HomePage() {
         getProducts();
     };
 
+    const nextPage = () => {
+        if (page < totalPage) {
+            setPage(page + 1);
+        }
+    };
+
+    const previousPage = () => {
+        if (page > 1) {
+            setPage(page - 1);
+        }
+    };
+
     useEffect(() => {
         getProducts();
-    }, [category, searchProduct]);
+    }, [category, searchProduct, page]);
 
     return (
         <div>
@@ -135,10 +149,16 @@ function HomePage() {
             </div>
 
             <div className="pagination">
-                <button className="previous-button">Previous</button>
-                <button className="next-button">Next</button>
+                <button className="previous-button" onClick={previousPage}>
+                    Previous
+                </button>
+                <button className="next-button" onClick={nextPage}>
+                    Next
+                </button>
             </div>
-            <div className="pages">1/ total page</div>
+            <div className="pages">
+                {page}/ {totalPage}
+            </div>
         </div>
     );
 }
